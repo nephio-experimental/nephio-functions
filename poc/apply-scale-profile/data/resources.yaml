@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configmap
+data:
+  nginx.conf-high: highscale
+  nginx.conf-low: lowscale
+  nginx.conf-medium: mediumscale
+  nginx.conf: lowscale
+---
+apiVersion: v1
+kind: Service
+metadata: # kpt-merge: /my-service
+  name: my-service
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|Service|default|my-service'
+spec:
+  selector:
+    app: MyApp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: # kpt-merge: /nginx-deployment
+  name: nginx-deployment
+  labels:
+    app: nginx
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'apps|Deployment|default|nginx-deployment'
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
