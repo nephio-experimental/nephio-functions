@@ -67,7 +67,7 @@ func (p configMapScalePolicy) applyScaleProfile(rl *fn.ResourceList, sp *fn.Kube
 		return fmt.Errorf("ConfigMap %q not found in resource list", p.Name)
 	}
 
-	siteDensity := sp.GetString("siteDensity")
+	siteDensity := sp.NestedStringOrDie("spec", "siteDensity")
 	scaledKey := p.Key + "-" + siteDensity
 	data := cm.NestedStringMapOrDie("data")
 	scaledValue, ok := data[scaledKey]
